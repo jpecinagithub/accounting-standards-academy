@@ -6,48 +6,50 @@ import {
   Menu, X, Sun, Moon, GraduationCap, FlaskConical,
 } from 'lucide-react';
 import { useProgress } from '../store/progress.jsx';
+import { useT } from '../i18n/useT.js';
 
 const NAV = [
-  { section: 'Learn' },
-  { to: '/', label: 'Dashboard', icon: LayoutDashboard, end: true },
-  { to: '/path', label: 'Learning Path', icon: RouteIcon },
-  { to: '/ifrs', label: 'IFRS Standards', icon: Landmark },
-  { to: '/statements', label: 'Financial Statements', icon: FileBarChart2 },
-  { section: 'Practice' },
-  { to: '/journal-lab', label: 'Journal Entry Lab', icon: BookOpenCheck },
-  { to: '/impact-lab', label: 'Statement Impact Lab', icon: Scale },
-  { to: '/cases', label: 'Practical Cases', icon: Briefcase },
-  { to: '/quizzes', label: 'Quizzes', icon: HelpCircle },
-  { to: '/exam', label: 'Final Exam', icon: GraduationCap },
-  { to: '/simulator', label: 'Month-End Simulator', icon: FlaskConical },
-  { to: '/interview', label: 'Interview Practice', icon: Mic },
-  { section: 'Review' },
-  { to: '/review', label: 'Review Mistakes', icon: AlertCircle, badge: 'mistakes' },
-  { to: '/glossary', label: 'Glossary', icon: BookMarked },
-  { to: '/progress', label: 'My Progress', icon: TrendingUp },
+  { section: 'nav.learn' },
+  { to: '/', label: 'nav.dashboard', icon: LayoutDashboard, end: true },
+  { to: '/path', label: 'nav.learningPath', icon: RouteIcon },
+  { to: '/ifrs', label: 'nav.ifrs', icon: Landmark },
+  { to: '/statements', label: 'nav.statements', icon: FileBarChart2 },
+  { section: 'nav.practice' },
+  { to: '/journal-lab', label: 'nav.journalLab', icon: BookOpenCheck },
+  { to: '/impact-lab', label: 'nav.impactLab', icon: Scale },
+  { to: '/cases', label: 'nav.cases', icon: Briefcase },
+  { to: '/quizzes', label: 'nav.quizzes', icon: HelpCircle },
+  { to: '/exam', label: 'nav.exam', icon: GraduationCap },
+  { to: '/simulator', label: 'nav.simulator', icon: FlaskConical },
+  { to: '/interview', label: 'nav.interview', icon: Mic },
+  { section: 'nav.review' },
+  { to: '/review', label: 'nav.reviewMistakes', icon: AlertCircle, badge: 'mistakes' },
+  { to: '/glossary', label: 'nav.glossary', icon: BookMarked },
+  { to: '/progress', label: 'nav.progress', icon: TrendingUp },
 ];
 
 const TITLES = {
-  '/': 'Dashboard', '/path': 'Learning Path', '/ifrs': 'IFRS Standards',
-  '/statements': 'Financial Statements', '/journal-lab': 'Journal Entry Lab',
-  '/impact-lab': 'Statement Impact Lab', '/cases': 'Practical Cases',
-  '/quizzes': 'Quizzes', '/exam': 'Final Exam', '/simulator': 'Month-End Simulator',
-  '/interview': 'Interview Practice', '/review': 'Review Mistakes',
-  '/glossary': 'Glossary', '/progress': 'My Progress',
+  '/': 'nav.dashboard', '/path': 'nav.learningPath', '/ifrs': 'nav.ifrs',
+  '/statements': 'nav.statements', '/journal-lab': 'nav.journalLab',
+  '/impact-lab': 'nav.impactLab', '/cases': 'nav.cases',
+  '/quizzes': 'nav.quizzes', '/exam': 'nav.exam', '/simulator': 'nav.simulator',
+  '/interview': 'nav.interview', '/review': 'nav.reviewMistakes',
+  '/glossary': 'nav.glossary', '/progress': 'nav.progress',
 };
 
 export default function Layout({ children }) {
-  const { store, toggleTheme } = useProgress();
+  const { store, toggleTheme, setLang } = useProgress();
+  const t = useT();
   const [open, setOpen] = useState(false);
   const location = useLocation();
   const mistakeCount = (store.mistakes || []).length;
 
   const titleFor = (path) => {
-    if (path.startsWith('/module/')) return 'Module';
-    if (path.startsWith('/case/')) return 'Case Study';
-    if (path.startsWith('/practice')) return 'Practice Quiz';
-    if (path.startsWith('/interview/rapid')) return 'Rapid Interview';
-    return TITLES[path] || 'Academy';
+    if (path.startsWith('/module/')) return t('nav.module');
+    if (path.startsWith('/case/')) return t('nav.case');
+    if (path.startsWith('/practice')) return t('nav.practiceQuiz');
+    if (path.startsWith('/interview/rapid')) return t('nav.rapidInterview');
+    return t(TITLES[path] || 'nav.academy');
   };
 
   return (
@@ -64,7 +66,7 @@ export default function Layout({ children }) {
         <nav className="nav">
           {NAV.map((item, i) =>
             item.section ? (
-              <div className="nav-section" key={i}>{item.section}</div>
+              <div className="nav-section" key={i}>{t(item.section)}</div>
             ) : (
               <NavLink
                 key={item.to} to={item.to} end={item.end}
@@ -72,7 +74,7 @@ export default function Layout({ children }) {
                 onClick={() => setOpen(false)}
               >
                 <item.icon />
-                {item.label}
+                {t(item.label)}
                 {item.badge === 'mistakes' && mistakeCount > 0 && (
                   <span className="nav-badge">{mistakeCount}</span>
                 )}
@@ -80,18 +82,27 @@ export default function Layout({ children }) {
             )
           )}
         </nav>
-        <div className="sidebar-foot">40 modules · 350+ questions · IFRS</div>
+        <div className="sidebar-foot">{t('nav.sidebarFoot')}</div>
       </aside>
 
       <div className="main-col">
         <header className="topbar">
-          <button className="icon-btn menu-btn" onClick={() => setOpen(true)} aria-label="Open menu"><Menu /></button>
+          <button className="icon-btn menu-btn" onClick={() => setOpen(true)} aria-label={t('common.openMenu')}><Menu /></button>
           <div className="topbar-title">{titleFor(location.pathname)}</div>
           <div className="topbar-spacer" />
-          <button className="icon-btn" onClick={toggleTheme} aria-label="Toggle theme" title="Toggle light / dark mode">
+          <select
+            className="lang-select"
+            value={store.lang === 'es' ? 'es' : 'en'}
+            onChange={e => setLang(e.target.value)}
+            aria-label={t('lang.label')}
+          >
+            <option value="en">{t('lang.english')}</option>
+            <option value="es">{t('lang.spanish')}</option>
+          </select>
+          <button className="icon-btn" onClick={toggleTheme} aria-label={t('common.toggleTheme')} title={t('common.toggleThemeTitle')}>
             {store.theme === 'dark' ? <Sun /> : <Moon />}
           </button>
-          <button className="icon-btn" onClick={() => setOpen(o => !o)} aria-label="Toggle sidebar" style={{ display: 'none' }}>
+          <button className="icon-btn" onClick={() => setOpen(o => !o)} aria-label={t('common.toggleSidebar')} style={{ display: 'none' }}>
             <X />
           </button>
         </header>

@@ -1,6 +1,8 @@
 import React, { useState, useMemo } from 'react';
 import { ArrowRight, RotateCcw, CheckCircle2, XCircle, Trophy } from 'lucide-react';
 import { useProgress } from '../store/progress.jsx';
+import { useT } from '../i18n/useT.js';
+import { SKILL_LABEL, TOPIC_LABEL, DIFFICULTY_LABEL, label } from '../i18n/labels.js';
 import { ProgressBar } from './ui.jsx';
 
 const LETTERS = ['A', 'B', 'C', 'D'];
@@ -11,7 +13,9 @@ const LETTERS = ['A', 'B', 'C', 'D'];
  *        onComplete({score,total}) optional, ctaLabel
  */
 export default function Quiz({ questions, quizId, title, subtitle, instantFeedback = true, onComplete, ctaLabel }) {
-  const { recordQuizResult } = useProgress();
+  const { store, recordQuizResult } = useProgress();
+  const t = useT();
+  const lang = store.lang === 'es' ? 'es' : 'en';
   const [idx, setIdx] = useState(0);
   const [picked, setPicked] = useState(null);
   const [answers, setAnswers] = useState([]);
@@ -21,7 +25,7 @@ export default function Quiz({ questions, quizId, title, subtitle, instantFeedba
   const qs = useMemo(() => questions || [], [questions]);
   const q = qs[idx];
 
-  if (!qs.length) return <p className="muted">No questions available.</p>;
+  if (!qs.length) return <p className="muted">{t('quiz.noQuestions')}</p>;
 
   const finish = (allAnswers) => {
     const score = allAnswers.filter(a => a.correct).length;
@@ -65,19 +69,19 @@ export default function Quiz({ questions, quizId, title, subtitle, instantFeedba
       <div className="quiz-box">
         <div className="quiz-results">
           <Trophy size={40} style={{ color: 'var(--accent-text)' }} />
-          <h2 className="mt">{title || 'Quiz complete'}</h2>
+          <h2 className="mt">{title || t('quiz.complete')}</h2>
           <div className="score-ring serif-num" style={{ color: pct >= 70 ? 'var(--success)' : pct >= 50 ? 'var(--warn)' : 'var(--danger)' }}>
             {pct}%
           </div>
-          <p className="muted">{score} of {qs.length} correct</p>
+          <p className="muted">{t('quiz.scoreOf', { score, total: qs.length })}</p>
           <p className="small muted">
-            {pct >= 90 ? 'Outstanding — true controller-level judgment.' :
-             pct >= 70 ? 'Solid professional knowledge. Review the misses below.' :
-             pct >= 50 ? 'Developing — revisit the module theory, then retry.' :
-             'Further study recommended before moving on.'}
+            {pct >= 90 ? t('quiz.band90') :
+             pct >= 70 ? t('quiz.band70') :
+             pct >= 50 ? t('quiz.band50') :
+             t('quiz.band0')}
           </p>
           <div className="flex gap center wrap" style={{ justifyContent: 'center' }}>
-            <button className="btn btn-ghost btn-sm" onClick={restart}><RotateCcw />Retake</button>
+            <button className="btn btn-ghost btn-sm" onClick={restart}><RotateCcw />{t('quiz.retake')}</button>
           </div>
         </div>
         <div className="answer-review">
@@ -85,8 +89,8 @@ export default function Quiz({ questions, quizId, title, subtitle, instantFeedba
             <div className="review-item" key={i}>
               <div className="rq">{i + 1}. {a.question}</div>
               <div className="ra">
-                Your answer: <strong style={{ color: a.correct ? 'var(--success)' : 'var(--danger)' }}>{LETTERS[a.picked]} — {a.options[a.picked]}</strong>
-                {!a.correct && <span> · Correct: <strong style={{ color: 'var(--success)' }}>{LETTERS[a.answer]} — {a.options[a.answer]}</strong></span>}
+                {t('quiz.yourAnswer')} <strong style={{ color: a.correct ? 'var(--success)' : 'var(--danger)' }}>{LETTERS[a.picked]} — {a.options[a.picked]}</strong>
+                {!a.correct && <span> · {t('quiz.correctIs')} <strong style={{ color: 'var(--success)' }}>{LETTERS[a.answer]} — {a.options[a.answer]}</strong></span>}
               </div>
               {a.explanation && <div className="ra mt" style={{ color: 'var(--text-muted)' }}>{a.explanation}</div>}
             </div>
@@ -102,15 +106,15 @@ export default function Quiz({ questions, quizId, title, subtitle, instantFeedba
   return (
     <div className="quiz-box">
       <div className="quiz-top">
-        <span>{title || 'Quiz'} {subtitle && <span className="muted">· {subtitle}</span>}</span>
-        <span className="serif-num">Question {idx + 1} / {qs.length}</span>
+        <span>{title || t('quiz.title')} {subtitle && <span className="muted">· {subtitle}</span>}</span>
+        <span className="serif-num">{t('quiz.questionOf', { n: idx + 1, total: qs.length })}</span>
       </div>
       <ProgressBar thin value={((idx) / qs.length) * 100} />
       <div className="quiz-q" style={{ marginTop: '1rem' }}>{q.question}</div>
       <div className="flex gap wrap mb">
-        {q.topic && <span className="badge">{q.topic}</span>}
-        {q.difficulty && <span className="badge badge-blue">{q.difficulty}</span>}
-        {q.skill && <span className="badge badge-gold">{q.skill}</span>}
+        {q.topic && <span className="badge">{label(TOPIC_LABEL, q.topic, lang)}</span>}
+        {q.difficulty && <span className="badge badge-blue">{label(DIFFICULTY_LABEL, q.difficulty, lang)}</span>}
+        {q.skill && <span className="badge badge-gold">{label(SKILL_LABEL, q.skill, lang)}</span>}
       </div>
       <div className="opt-list">
         {q.options.map((opt, i) => {
@@ -131,16 +135,16 @@ export default function Quiz({ questions, quizId, title, subtitle, instantFeedba
       </div>
       {showFeedback && (
         <div className={`quiz-feedback ${isCorrectPick ? 'ok' : 'no'}`}>
-          <strong>{isCorrectPick ? 'Correct.' : 'Not quite.'}</strong>
+          <strong>{isCorrectPick ? t('quiz.feedbackOk') : t('quiz.feedbackNo')}</strong>
           {q.explanation}
         </div>
       )}
       <div className="quiz-nav">
         <span className="small muted">
-          {answers.filter(a => a.correct).length} correct so far
+          {t('quiz.correctSoFar', { n: answers.filter(a => a.correct).length })}
         </span>
         <button className="btn btn-primary btn-sm" disabled={picked === null} onClick={next}>
-          {idx + 1 >= qs.length ? (ctaLabel || 'Finish') : 'Next'} <ArrowRight />
+          {idx + 1 >= qs.length ? (ctaLabel || t('common.finish')) : t('quiz.next')} <ArrowRight />
         </button>
       </div>
     </div>

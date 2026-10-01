@@ -2,7 +2,9 @@ import React, { useEffect, useState } from 'react';
 import { useParams, Link, useNavigate } from 'react-router-dom';
 import { ArrowLeft, ArrowRight, Bookmark, BookmarkCheck, CheckCircle2, AlertTriangle, MessageCircleQuestion, Clock } from 'lucide-react';
 import { useProgress } from '../store/progress.jsx';
-import { getModule, getNeighbors } from '../data/index.js';
+import { useT } from '../i18n/useT.js';
+import { useContent } from '../i18n/content.js';
+import { SKILL_LABEL, LEVEL_LABEL, label } from '../i18n/labels.js';
 import { PageHeader, SectionRenderer, Callout } from '../components/ui.jsx';
 import { VISUALS } from '../components/visuals.jsx';
 import Quiz from '../components/Quiz.jsx';
@@ -11,6 +13,9 @@ export default function ModulePage() {
   const { id } = useParams();
   const navigate = useNavigate();
   const { store, completeModule, uncompleteModule, toggleBookmark, setLastVisited } = useProgress();
+  const t = useT();
+  const lang = store.lang === 'es' ? 'es' : 'en';
+  const { getModule, getNeighbors } = useContent();
   const [openQA, setOpenQA] = useState(null);
   const mod = getModule(id);
 
@@ -23,8 +28,8 @@ export default function ModulePage() {
   if (!mod) {
     return (
       <div className="empty">
-        <h3>Module not found</h3>
-        <Link className="btn btn-ghost" to="/path">Back to Learning Path</Link>
+        <h3>{t('module.notFound')}</h3>
+        <Link className="btn btn-ghost" to="/path">{t('module.backToPath')}</Link>
       </div>
     );
   }
@@ -37,32 +42,32 @@ export default function ModulePage() {
   return (
     <div>
       <Link to="/path" className="small muted flex center gap" style={{ gap: 6, marginBottom: '0.8rem' }}>
-        <ArrowLeft size={14} /> Learning Path
+        <ArrowLeft size={14} /> {t('nav.learningPath')}
       </Link>
       <PageHeader
-        kicker={`Level ${mod.level} · ${mod.levelTitle} · ${mod.standard}`}
+        kicker={t('module.kicker', { level: mod.level, levelTitle: label(LEVEL_LABEL, mod.levelTitle, lang), standard: mod.standard })}
         title={mod.title}
         lead={mod.description}
         actions={
           <>
             <button className="btn btn-ghost btn-sm" onClick={() => toggleBookmark(id)}>
-              {bookmarked ? <BookmarkCheck /> : <Bookmark />} {bookmarked ? 'Saved' : 'Bookmark'}
+              {bookmarked ? <BookmarkCheck /> : <Bookmark />} {bookmarked ? t('module.saved') : t('module.bookmark')}
             </button>
             <button
               className={`btn btn-sm ${done ? 'btn-ghost' : 'btn-primary'}`}
               onClick={() => (done ? uncompleteModule(id) : completeModule(id))}
             >
-              <CheckCircle2 /> {done ? 'Completed — undo' : 'Mark as complete'}
+              <CheckCircle2 /> {done ? t('module.completedUndo') : t('module.markComplete')}
             </button>
           </>
         }
       />
       <div className="flex gap wrap mb">
         <span className="badge badge-gold">{mod.standard}</span>
-        <span className="badge"><Clock size={12} /> {mod.minutes} min</span>
-        <span className="badge badge-blue">{mod.quiz?.length || 0} quiz questions</span>
-        {(mod.skills || []).map(s => <span className="badge" key={s}>{s}</span>)}
-        {quizResult && <span className="badge badge-green">Quiz best: {Math.round((quizResult.score / quizResult.total) * 100)}%</span>}
+        <span className="badge"><Clock size={12} /> {t('common.minutes', { n: mod.minutes })}</span>
+        <span className="badge badge-blue">{t('module.quizQuestions', { n: mod.quiz?.length || 0 })}</span>
+        {(mod.skills || []).map(s => <span className="badge" key={s}>{label(SKILL_LABEL, s, lang)}</span>)}
+        {quizResult && <span className="badge badge-green">{t('module.quizBest', { pct: Math.round((quizResult.score / quizResult.total) * 100) })}</span>}
       </div>
 
       <div className="card article mb">
@@ -75,7 +80,7 @@ export default function ModulePage() {
 
       {mod.mistakes?.length > 0 && (
         <div className="card mb">
-          <h3><AlertTriangle /> Common mistakes</h3>
+          <h3><AlertTriangle /> {t('module.mistakes')}</h3>
           <ul className="mistake-list">
             {mod.mistakes.map((m, i) => <li key={i}><AlertTriangle /><span>{m}</span></li>)}
           </ul>
@@ -84,7 +89,7 @@ export default function ModulePage() {
 
       {mod.interviewQA?.length > 0 && (
         <div className="card mb">
-          <h3><MessageCircleQuestion /> How this appears in interviews</h3>
+          <h3><MessageCircleQuestion /> {t('module.interviewQA')}</h3>
           {mod.interviewQA.map((qa, i) => (
             <div className={`qa-item${openQA === i ? ' open' : ''}`} key={i}>
               <button className="qa-q" onClick={() => setOpenQA(openQA === i ? null : i)}>
@@ -97,12 +102,12 @@ export default function ModulePage() {
         </div>
       )}
 
-      <h2 className="mb">Module quiz</h2>
+      <h2 className="mb">{t('module.quizTitle')}</h2>
       <Quiz
         questions={mod.quiz || []}
         quizId={`module-${mod.id}`}
         title={mod.title}
-        subtitle="Module quiz"
+        subtitle={t('module.quizTitle')}
         onComplete={({ score, total }) => {
           if (total > 0 && score / total >= 0.7) completeModule(mod.id);
         }}

@@ -1,21 +1,22 @@
 import React, { useState } from 'react';
 import { CheckCircle2, XCircle, RotateCcw } from 'lucide-react';
 import { useProgress } from '../store/progress.jsx';
-import { IMPACT_LAB } from '../data/index.js';
+import { useT } from '../i18n/useT.js';
+import { useContent } from '../i18n/content.js';
 import { PageHeader, Callout } from '../components/ui.jsx';
 
 const LETTERS = ['A', 'B', 'C', 'D'];
-const GROUPS = [
-  { key: 'pl', label: 'Profit & Loss impact' },
-  { key: 'bs', label: 'Balance Sheet impact' },
-  { key: 'cf', label: 'Cash Flow impact' },
-];
 
-function Exercise({ ex, index }) {
+function Exercise({ ex, index, t }) {
   const { store, recordLab } = useProgress();
   const [picks, setPicks] = useState({ pl: null, bs: null, cf: null });
   const [checked, setChecked] = useState(false);
   const done = !!store.labs?.[ex.id];
+  const GROUPS = [
+    { key: 'pl', label: t('ilab.pl') },
+    { key: 'bs', label: t('ilab.bs') },
+    { key: 'cf', label: t('ilab.cf') },
+  ];
   const allPicked = GROUPS.every(g => picks[g.key] !== null);
   const score = GROUPS.filter(g => picks[g.key] === ex.answer[g.key]).length;
   const perfect = checked && score === 3;
@@ -26,11 +27,11 @@ function Exercise({ ex, index }) {
   return (
     <div className="lab-ex">
       <div className="flex between center wrap gap mb">
-        <span className="badge">Exercise {index + 1}</span>
-        {done && <span className="badge badge-green"><CheckCircle2 size={12} /> Solved</span>}
+        <span className="badge">{t('common.exercise', { n: index + 1 })}</span>
+        {done && <span className="badge badge-green"><CheckCircle2 size={12} /> {t('common.solved')}</span>}
       </div>
       <div className="journal-card">
-        <div className="txn">Journal entry</div>
+        <div className="txn">{t('ilab.journalEntry')}</div>
         <div style={{ fontWeight: 700, fontSize: '1rem' }}>{ex.entry}</div>
       </div>
       {GROUPS.map(g => (
@@ -54,14 +55,14 @@ function Exercise({ ex, index }) {
         </div>
       ))}
       <div className="flex gap">
-        {!checked && <button className="btn btn-primary btn-sm" disabled={!allPicked} onClick={check}>Check impact</button>}
-        {checked && <button className="btn btn-ghost btn-sm" onClick={reset}><RotateCcw /> Try again</button>}
+        {!checked && <button className="btn btn-primary btn-sm" disabled={!allPicked} onClick={check}>{t('ilab.check')}</button>}
+        {checked && <button className="btn btn-ghost btn-sm" onClick={reset}><RotateCcw /> {t('common.retry')}</button>}
       </div>
       {checked && (
         <div className={`quiz-feedback ${perfect ? 'ok' : 'no'} mt`}>
           <strong className="flex center gap" style={{ gap: 6 }}>
             {perfect ? <CheckCircle2 size={16} /> : <XCircle size={16} />}
-            {perfect ? `Perfect — ${score}/3 correct.` : `${score}/3 correct.`}
+            {perfect ? t('ilab.perfect', { score }) : t('ilab.score', { score })}
           </strong>
           {ex.explanation}
         </div>
@@ -72,18 +73,20 @@ function Exercise({ ex, index }) {
 
 export default function ImpactLab() {
   const { store } = useProgress();
+  const t = useT();
+  const { IMPACT_LAB } = useContent();
   const done = IMPACT_LAB.filter(e => store.labs?.[e.id]).length;
   return (
     <div>
       <PageHeader
-        kicker="Think like a controller"
-        title="Financial Statement Impact Lab"
-        lead="Given a journal entry, identify exactly what happens to the P&L, the balance sheet and the cash flow statement. This is the core judgment skill of financial reporting."
+        kicker={t('ilab.kicker')}
+        title={t('nav.impactLab')}
+        lead={t('ilab.lead')}
       />
-      <p className="small muted mb">{done} of {IMPACT_LAB.length} exercises solved</p>
-      {IMPACT_LAB.map((ex, i) => <Exercise key={ex.id} ex={ex} index={i} />)}
-      <Callout type="key" title="Why this matters">
-        Auditors, controllers and FP&A all live in this question: “I booked X — so what moved, and by how much?” If you can answer it for any entry, you can read any set of accounts.
+      <p className="small muted mb">{t('ilab.progress', { done, total: IMPACT_LAB.length })}</p>
+      {IMPACT_LAB.map((ex, i) => <Exercise key={ex.id} ex={ex} index={i} t={t} />)}
+      <Callout type="key" title={t('ilab.why')}>
+        {t('ilab.whyText')}
       </Callout>
     </div>
   );

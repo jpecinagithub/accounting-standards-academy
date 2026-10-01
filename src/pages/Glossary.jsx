@@ -1,31 +1,35 @@
 import React, { useState, useMemo } from 'react';
-import { Search, BookMarked } from 'lucide-react';
-import { GLOSSARY } from '../data/index.js';
+import { BookMarked } from 'lucide-react';
+import { useT } from '../i18n/useT.js';
+import { useContent } from '../i18n/content.js';
 import { PageHeader } from '../components/ui.jsx';
 
 export default function Glossary() {
+  const t = useT();
+  const { GLOSSARY } = useContent();
   const [q, setQ] = useState('');
   const list = useMemo(() => {
-    const t = q.trim().toLowerCase();
+    const s = q.trim().toLowerCase();
     const all = [...GLOSSARY].sort((a, b) => a.term.localeCompare(b.term));
-    if (!t) return all;
-    return all.filter(g => g.term.toLowerCase().includes(t) || g.definition.toLowerCase().includes(t));
-  }, [q]);
+    if (!s) return all;
+    return all.filter(g => g.term.toLowerCase().includes(s) || g.definition.toLowerCase().includes(s));
+  }, [q, GLOSSARY]);
 
   return (
     <div>
       <PageHeader
-        kicker="Speak the language"
-        title="Glossary"
-        lead={`${GLOSSARY.length} terms every finance professional should be able to define without hesitation.`}
+        kicker={t('glossary.kicker')}
+        title={t('nav.glossary')}
+        lead={t('glossary.lead', { n: GLOSSARY.length })}
       />
       <div className="gloss-search">
         <input
-          type="text" placeholder="Search terms or definitions…" value={q}
+          type="text" placeholder={t('glossary.search')} value={q}
           onChange={e => setQ(e.target.value)}
+          aria-label={t('glossary.search')}
         />
       </div>
-      <p className="small muted mb">{list.length} term{list.length === 1 ? '' : 's'}</p>
+      <p className="small muted mb">{t('glossary.manyTerms', { n: list.length })}</p>
       <div className="gloss-grid">
         {list.map((g, i) => (
           <div className="gloss-card" key={i}>
@@ -35,7 +39,7 @@ export default function Glossary() {
         ))}
       </div>
       {list.length === 0 && (
-        <div className="empty"><BookMarked /><h3>No matches</h3><p className="muted small">Try a different search.</p></div>
+        <div className="empty"><BookMarked /><h3>{t('common.noMatches')}</h3><p className="muted small">{t('glossary.tryDifferent')}</p></div>
       )}
     </div>
   );

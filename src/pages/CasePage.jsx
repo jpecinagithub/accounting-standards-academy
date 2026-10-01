@@ -1,12 +1,15 @@
 import React, { useEffect } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import { ArrowLeft, Clock } from 'lucide-react';
-import { CASES } from '../data/index.js';
+import { useT } from '../i18n/useT.js';
+import { useContent } from '../i18n/content.js';
 import { PageHeader } from '../components/ui.jsx';
 import CaseRunner from '../components/CaseRunner.jsx';
 
 export default function CasePage() {
   const { id } = useParams();
+  const t = useT();
+  const { CASES } = useContent();
   const c = CASES.find(x => x.id === id);
 
   useEffect(() => { window.scrollTo(0, 0); }, [id]);
@@ -14,8 +17,8 @@ export default function CasePage() {
   if (!c) {
     return (
       <div className="empty">
-        <h3>Case not found</h3>
-        <Link className="btn btn-ghost" to="/cases">Back to cases</Link>
+        <h3>{t('casePage.notFound')}</h3>
+        <Link className="btn btn-ghost" to="/cases">{t('casePage.back')}</Link>
       </div>
     );
   }
@@ -23,16 +26,16 @@ export default function CasePage() {
   return (
     <div>
       <Link to="/cases" className="small muted flex center gap" style={{ gap: 6, marginBottom: '0.8rem' }}>
-        <ArrowLeft size={14} /> Practical Cases
+        <ArrowLeft size={14} /> {t('nav.cases')}
       </Link>
       <PageHeader
-        kicker="Case study"
+        kicker={t('casePage.kicker')}
         title={c.title}
         lead={null}
       />
       <div className="flex gap wrap mb">
-        <span className="badge"><Clock size={12} /> {c.minutes} min</span>
-        {c.id === 'case-capstone' && <span className="badge badge-gold">CFO / Controller capstone</span>}
+        <span className="badge"><Clock size={12} /> {t('common.minutes', { n: c.minutes })}</span>
+        {c.id === 'case-capstone' && <span className="badge badge-gold">{t('casePage.capstoneBadge')}</span>}
       </div>
       <div className="card"><CaseRunner caseData={c} /></div>
     </div>

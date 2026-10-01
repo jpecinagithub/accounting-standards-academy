@@ -1,18 +1,21 @@
 import React, { useState, useMemo } from 'react';
 import { Link } from 'react-router-dom';
-import { Timer, Eye, EyeOff, Mic, ArrowRight } from 'lucide-react';
-import { INTERVIEW } from '../data/index.js';
+import { Timer, Eye, EyeOff } from 'lucide-react';
+import { useProgress } from '../store/progress.jsx';
+import { useT } from '../i18n/useT.js';
+import { useContent } from '../i18n/content.js';
+import { CATEGORY_LABEL, label } from '../i18n/labels.js';
 import { PageHeader, Callout } from '../components/ui.jsx';
 
-const CATS = ['All', ...new Set(INTERVIEW.map(q => q.category))];
+const ALL = '__all__';
 
-function InterviewCard({ item, blurred, onToggle }) {
+function InterviewCard({ item, blurred, onToggle, t, lang }) {
   return (
     <div className="card mb">
       <div className="flex between center wrap gap">
-        <span className="badge badge-blue">{item.category}</span>
+        <span className="badge badge-blue">{label(CATEGORY_LABEL, item.category, lang)}</span>
         <button className="btn btn-ghost btn-sm" onClick={onToggle}>
-          {blurred ? <Eye /> : <EyeOff />} {blurred ? 'Reveal strong answer' : 'Hide answer'}
+          {blurred ? <Eye /> : <EyeOff />} {blurred ? t('interview.reveal') : t('interview.hide')}
         </button>
       </div>
       <h3 className="mt">{item.q}</h3>
@@ -20,7 +23,7 @@ function InterviewCard({ item, blurred, onToggle }) {
         <p>{item.a}</p>
         {item.keyPoints?.length > 0 && (
           <>
-            <strong className="small">Key points the interviewer listens for:</strong>
+            <strong className="small">{t('interview.keyPoints')}</strong>
             <ul className="qa-a keypts" style={{ border: 'none', padding: '0.3rem 0 0 1.2rem', background: 'none' }}>
               {item.keyPoints.map((k, i) => <li key={i}>{k}</li>)}
             </ul>
@@ -32,21 +35,28 @@ function InterviewCard({ item, blurred, onToggle }) {
 }
 
 export default function Interview() {
-  const [cat, setCat] = useState('All');
+  const t = useT();
+  const { store } = useProgress();
+  const lang = store.lang === 'es' ? 'es' : 'en';
+  const { INTERVIEW } = useContent();
+  const [cat, setCat] = useState(ALL);
   const [revealed, setRevealed] = useState({});
-  const list = useMemo(() => cat === 'All' ? INTERVIEW : INTERVIEW.filter(q => q.category === cat), [cat]);
+
+  const cats = useMemo(() => [...new Set(INTERVIEW.map(q => q.category))], [INTERVIEW]);
+  const list = useMemo(() => cat === ALL ? INTERVIEW : INTERVIEW.filter(q => q.category === cat), [cat, INTERVIEW]);
 
   return (
     <div>
       <PageHeader
-        kicker="Sound like a controller"
-        title="Technical Interview Practice"
-        lead="Think first, then reveal the suggested strong answer. Interviewers test judgment, not memorization — every answer shows the reasoning."
-        actions={<Link className="btn btn-primary" to="/interview/rapid"><Timer /> 10-Minute Rapid Interview</Link>}
+        kicker={t('interview.kicker')}
+        title={t('nav.interview')}
+        lead={t('interview.lead')}
+        actions={<Link className="btn btn-primary" to="/interview/rapid"><Timer /> {t('interview.rapid')}</Link>}
       />
       <div className="flex gap wrap mb">
-        {CATS.map(c => (
-          <button key={c} className={`btn btn-sm ${cat === c ? 'btn-primary' : 'btn-ghost'}`} onClick={() => setCat(c)}>{c}</button>
+        <button className={`btn btn-sm ${cat === ALL ? 'btn-primary' : 'btn-ghost'}`} onClick={() => setCat(ALL)}>{t('interview.all')}</button>
+        {cats.map(c => (
+          <button key={c} className={`btn btn-sm ${cat === c ? 'btn-primary' : 'btn-ghost'}`} onClick={() => setCat(c)}>{label(CATEGORY_LABEL, c, lang)}</button>
         ))}
       </div>
       {list.map(item => (
@@ -54,10 +64,11 @@ export default function Interview() {
           key={item.id} item={item}
           blurred={!revealed[item.id]}
           onToggle={() => setRevealed(r => ({ ...r, [item.id]: !r[item.id] }))}
+          t={t} lang={lang}
         />
       ))}
-      <Callout type="interview" title="How to use this">
-        Read the question out loud. Answer as if a CFO were listening — 60 to 90 seconds, structured, with one concrete example. Then reveal and compare.
+      <Callout type="interview" title={t('interview.howTitle')}>
+        {t('interview.howText')}
       </Callout>
     </div>
   );

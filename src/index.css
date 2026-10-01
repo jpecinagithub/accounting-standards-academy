@@ -131,6 +131,12 @@ a { color: var(--accent-text); text-decoration: none; }
 }
 .icon-btn:hover { color: var(--text); border-color: var(--accent-dim); }
 .icon-btn svg { width: 18px; height: 18px; }
+.lang-select {
+  height: 36px; border-radius: 10px; border: 1px solid var(--border);
+  background: var(--panel); color: var(--text-muted); padding: 0 0.5rem;
+  cursor: pointer; font-size: 0.85rem; font-weight: 600;
+}
+.lang-select:hover { color: var(--text); border-color: var(--accent-dim); }
 .menu-btn { display: none; }
 
 .main { padding: 1.6rem; max-width: 1180px; width: 100%; margin: 0 auto; }

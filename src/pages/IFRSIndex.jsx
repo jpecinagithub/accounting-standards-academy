@@ -1,12 +1,15 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
 import { Landmark, Clock } from 'lucide-react';
-import { MODULES } from '../data/index.js';
 import { useProgress } from '../store/progress.jsx';
+import { useT } from '../i18n/useT.js';
+import { useContent } from '../i18n/content.js';
 import { PageHeader, ModuleStatusDot } from '../components/ui.jsx';
 
 export default function IFRSIndex() {
   const { store } = useProgress();
+  const t = useT();
+  const { MODULES } = useContent();
   const completed = store.completed || {};
   const groups = {};
   MODULES.forEach(m => {
@@ -19,9 +22,9 @@ export default function IFRSIndex() {
   return (
     <div>
       <PageHeader
-        kicker="Standard by standard"
-        title="IFRS Standards"
-        lead="Every module mapped to the standard it teaches — from the Conceptual Framework and IAS 1 through IFRS 9, 15 and 16 to group accounting."
+        kicker={t('ifrs.kicker')}
+        title={t('nav.ifrs')}
+        lead={t('ifrs.lead')}
       />
       <div className="grid grid-2">
         {order.map(std => (
@@ -34,7 +37,7 @@ export default function IFRSIndex() {
                     <ModuleStatusDot done={!!completed[m.id]} />
                     <div style={{ flex: 1 }}>
                       <div style={{ fontWeight: 600, fontSize: '0.9rem' }}>{m.title}</div>
-                      <div className="small muted flex center gap" style={{ gap: 5 }}><Clock size={12} />{m.minutes} min · {m.quiz?.length || 0} questions</div>
+                      <div className="small muted flex center gap" style={{ gap: 5 }}><Clock size={12} />{t('common.minutes', { n: m.minutes })} · {t('common.questions', { n: m.quiz?.length || 0 })}</div>
                     </div>
                   </div>
                 </Link>

@@ -5,11 +5,16 @@ import {
   FileCheck2, PenLine, Scale, AlertTriangle, Mic,
 } from 'lucide-react';
 import { useProgress, overallMastery, quizAccuracy, weakSkills } from '../store/progress.jsx';
-import { MODULES, SKILLS, getModule, CASES } from '../data/index.js';
+import { useT } from '../i18n/useT.js';
+import { useContent } from '../i18n/content.js';
+import { SKILL_LABEL, LEVEL_LABEL, label } from '../i18n/labels.js';
 import { PageHeader, StatCard, ProgressBar } from '../components/ui.jsx';
 
 export default function Dashboard() {
   const { store } = useProgress();
+  const t = useT();
+  const lang = store.lang === 'es' ? 'es' : 'en';
+  const { MODULES, SKILLS, getModule, CASES } = useContent();
   const mastery = overallMastery(store.skillStats);
   const completedCount = Object.keys(store.completed || {}).length;
   const accuracy = quizAccuracy(store.quizzes);
@@ -23,49 +28,49 @@ export default function Dashboard() {
   return (
     <div>
       <PageHeader
-        kicker="Accounting Standards & Financial Reporting"
-        title="Dashboard"
-        lead="Train like a controller: theory, journal entries, statement impact, real cases — tracked as you go."
-        actions={<Link className="btn btn-primary" to="/exam"><GraduationCap /> Final Exam</Link>}
+        kicker={t('dashboard.kicker')}
+        title={t('nav.dashboard')}
+        lead={t('dashboard.lead')}
+        actions={<Link className="btn btn-primary" to="/exam"><GraduationCap /> {t('nav.exam')}</Link>}
       />
 
       <div className="grid grid-2 mb">
         <div className="card">
           <div className="mastery-hero">
             <div>
-              <div className="stat-label">Accounting Standards Mastery</div>
+              <div className="stat-label">{t('dashboard.mastery')}</div>
               <div className="mastery-big serif-num">{mastery}<small>%</small></div>
             </div>
             <div style={{ flex: 1, minWidth: 180 }}>
               <ProgressBar value={mastery} />
               <p className="small muted mt" style={{ marginBottom: 0 }}>
                 {answered === 0
-                  ? 'Answer quiz questions to build your mastery score.'
-                  : `Based on ${answered} answered questions across ${Object.keys(store.skillStats || {}).length} skill areas.`}
+                  ? t('dashboard.masteryEmpty')
+                  : t('dashboard.masteryBased', { answered, n: Object.keys(store.skillStats || {}).length })}
               </p>
             </div>
           </div>
         </div>
 
         <div className="card">
-          <div className="stat-label">Continue learning</div>
+          <div className="stat-label">{t('dashboard.continue')}</div>
           {lastMod ? (
             <>
               <h3 className="mt">{lastMod.title}</h3>
-              <p className="small muted">Level {lastMod.level} · {lastMod.levelTitle} · {lastMod.standard}</p>
-              <Link className="btn btn-primary btn-sm" to={`/module/${lastMod.id}`}><PlayCircle /> Continue course</Link>
+              <p className="small muted">{t('dashboard.continueMeta', { level: lastMod.level, levelTitle: label(LEVEL_LABEL, lastMod.levelTitle, lang), standard: lastMod.standard })}</p>
+              <Link className="btn btn-primary btn-sm" to={`/module/${lastMod.id}`}><PlayCircle /> {t('dashboard.continueBtn')}</Link>
             </>
           ) : (
             <>
-              <h3 className="mt">Start with the foundations</h3>
-              <p className="small muted">Module 1 — Accounting Fundamentals: the equation everything else rests on.</p>
-              <Link className="btn btn-primary btn-sm" to="/module/m01"><PlayCircle /> Start course</Link>
+              <h3 className="mt">{t('dashboard.start')}</h3>
+              <p className="small muted">{t('dashboard.startText')}</p>
+              <Link className="btn btn-primary btn-sm" to="/module/m01"><PlayCircle /> {t('dashboard.startBtn')}</Link>
             </>
           )}
         </div>
       </div>
 
-      <h2 className="mb">Skill overview</h2>
+      <h2 className="mb">{t('dashboard.skills')}</h2>
       <div className="grid grid-skills mb">
         {SKILLS.map(sk => {
           const s = (store.skillStats || {})[sk];
@@ -73,43 +78,43 @@ export default function Dashboard() {
           return (
             <Link key={sk} to={`/practice?skill=${encodeURIComponent(sk)}`} className="card skill-card" style={{ textDecoration: 'none', color: 'inherit' }}>
               <div className="row">
-                <span className="skill-name">{sk}</span>
+                <span className="skill-name">{label(SKILL_LABEL, sk, lang)}</span>
                 <span className="skill-pct serif-num">{pct === null ? '—' : `${pct}%`}</span>
               </div>
               <ProgressBar thin value={pct || 0} />
               <div className="small muted mt" style={{ marginBottom: 0 }}>
-                {s ? `${s.correct}/${s.total} correct` : 'Not attempted yet'}
+                {s ? t('dashboard.skillScore', { correct: s.correct, total: s.total }) : t('dashboard.notAttempted')}
               </div>
             </Link>
           );
         })}
       </div>
 
-      <h2 className="mb">Statistics</h2>
+      <h2 className="mb">{t('dashboard.stats')}</h2>
       <div className="grid grid-4 mb">
-        <StatCard icon={BookOpen} label="Modules completed" value={`${completedCount} / ${MODULES.length}`} sub={`${Math.round((completedCount / MODULES.length) * 100)}% of the path`} />
-        <StatCard icon={Target} label="Quiz accuracy" value={accuracy === null ? '—' : `${accuracy}%`} sub={accuracy === null ? 'No quizzes taken yet' : 'Across all quizzes'} />
-        <StatCard icon={FileCheck2} label="Cases solved" value={`${casesDone} / ${CASES.length}`} sub="Practical case studies" />
-        <StatCard icon={PenLine} label="Lab exercises done" value={labsDone} sub="Journal + impact labs" />
-        <StatCard icon={AlertTriangle} label="Weak topics" value={weak.length} sub={weak.length ? weak[0].skill + ' needs work' : 'None flagged yet'} />
-        <StatCard icon={Mic} label="Interviews practiced" value={interviewsDone} sub="Rapid + review sessions" />
-        <StatCard icon={Scale} label="Mistakes logged" value={(store.mistakes || []).length} sub="Review them to improve" />
-        <StatCard icon={GraduationCap} label="Best exam score" value={store.exams?.length ? `${Math.max(...store.exams.map(e => e.pct))}%` : '—'} sub={store.exams?.length ? `${store.exams.length} attempt(s)` : '60-question final'} />
+        <StatCard icon={BookOpen} label={t('stats.modules')} value={`${completedCount} / ${MODULES.length}`} sub={t('stats.modulesSub', { pct: Math.round((completedCount / MODULES.length) * 100) })} />
+        <StatCard icon={Target} label={t('stats.accuracy')} value={accuracy === null ? '—' : `${accuracy}%`} sub={accuracy === null ? t('stats.accuracyEmpty') : t('stats.accuracySub')} />
+        <StatCard icon={FileCheck2} label={t('stats.cases')} value={`${casesDone} / ${CASES.length}`} sub={t('stats.casesSub')} />
+        <StatCard icon={PenLine} label={t('stats.labs')} value={labsDone} sub={t('stats.labsSub')} />
+        <StatCard icon={AlertTriangle} label={t('stats.weak')} value={weak.length} sub={weak.length ? t('stats.weakSub', { skill: label(SKILL_LABEL, weak[0].skill, lang) }) : t('stats.weakEmpty')} />
+        <StatCard icon={Mic} label={t('stats.interviews')} value={interviewsDone} sub={t('stats.interviewsSub')} />
+        <StatCard icon={Scale} label={t('stats.mistakes')} value={(store.mistakes || []).length} sub={t('stats.mistakesSub')} />
+        <StatCard icon={GraduationCap} label={t('stats.exam')} value={store.exams?.length ? `${Math.max(...store.exams.map(e => e.pct))}%` : '—'} sub={store.exams?.length ? t('stats.examSub', { n: store.exams.length }) : t('stats.examEmpty')} />
       </div>
 
-      <h2 className="mb">High-impact practice</h2>
+      <h2 className="mb">{t('dashboard.highImpact')}</h2>
       <div className="grid grid-3">
         <Link to="/simulator" className="card skill-card" style={{ textDecoration: 'none', color: 'inherit' }}>
-          <h3><FlaskConical /> Month-End Simulator</h3>
-          <p className="small muted">Run a full close checklist and catch the hidden issues before the controller signs off.</p>
+          <h3><FlaskConical /> {t('nav.simulator')}</h3>
+          <p className="small muted">{t('dashboard.cardSim')}</p>
         </Link>
         <Link to="/journal-lab" className="card skill-card" style={{ textDecoration: 'none', color: 'inherit' }}>
-          <h3><PenLine /> Journal Entry Lab</h3>
-          <p className="small muted">Build debits and credits yourself — then see the P&L, balance sheet and cash flow impact.</p>
+          <h3><PenLine /> {t('nav.journalLab')}</h3>
+          <p className="small muted">{t('dashboard.cardJournal')}</p>
         </Link>
         <Link to="/cases" className="card skill-card" style={{ textDecoration: 'none', color: 'inherit' }}>
-          <h3><FileCheck2 /> CFO Capstone</h3>
-          <p className="small muted">A full month-end pack with hidden accounting issues. Find them like a financial controller would.</p>
+          <h3><FileCheck2 /> {t('dashboard.cardCapstone')}</h3>
+          <p className="small muted">{t('dashboard.cardCapstoneText')}</p>
         </Link>
       </div>
     </div>

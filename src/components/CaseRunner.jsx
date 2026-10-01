@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { Check, Flag, RotateCcw, ListChecks } from 'lucide-react';
 import { useProgress } from '../store/progress.jsx';
+import { useT } from '../i18n/useT.js';
 import { DataTable, Callout } from './ui.jsx';
 
 /**
@@ -9,6 +10,7 @@ import { DataTable, Callout } from './ui.jsx';
  */
 export default function CaseRunner({ caseData }) {
   const { recordLab } = useProgress();
+  const t = useT();
   const [selected, setSelected] = useState([]);
   const [submitted, setSubmitted] = useState(false);
 
@@ -34,15 +36,15 @@ export default function CaseRunner({ caseData }) {
     <div>
       <p style={{ fontSize: '1rem' }}>{caseData.background}</p>
 
-      {(caseData.tables || []).map((t, i) => (
+      {(caseData.tables || []).map((t2, i) => (
         <div key={i} className="mt">
-          <h3>{t.title}</h3>
-          <DataTable headers={t.headers} rows={t.rows} />
+          <h3>{t2.title}</h3>
+          <DataTable headers={t2.headers} rows={t2.rows} />
         </div>
       ))}
 
       <div className="divider" />
-      <h3><span className="flex center gap"><ListChecks size={19} />{caseData.task || 'Select every finding that warrants investigation.'}</span></h3>
+      <h3><span className="flex center gap"><ListChecks size={19} />{caseData.task || t('case.taskDefault')}</span></h3>
 
       <div className="mt">
         {caseData.findings.map(f => {
@@ -61,10 +63,10 @@ export default function CaseRunner({ caseData }) {
                   <div>{f.text}</div>
                   {submitted && (
                     <div className={`verdict ${f.isIssue ? 'ok' : 'bad'}`}>
-                      {isHit && 'Correct — this is a real issue.'}
-                      {isMiss && 'Missed — this needed investigation.'}
-                      {isFalse && 'Not an issue — be careful not to over-audit.'}
-                      {!checked && !f.isIssue && 'Correctly ignored.'}
+                      {isHit && t('case.hit')}
+                      {isMiss && t('case.miss')}
+                      {isFalse && t('case.false')}
+                      {!checked && !f.isIssue && t('case.ignored')}
                     </div>
                   )}
                 </div>
@@ -79,26 +81,26 @@ export default function CaseRunner({ caseData }) {
 
       {!submitted ? (
         <button className="btn btn-primary mt" onClick={submit} disabled={selected.length === 0}>
-          <Flag /> Submit findings ({selected.length} selected)
+          <Flag /> {t('case.submit', { n: selected.length })}
         </button>
       ) : (
         <div className="mt">
           <div className="card">
-            <h3>Your review score</h3>
+            <h3>{t('case.score')}</h3>
             <p className="serif-num" style={{ fontSize: '1.6rem', fontWeight: 800 }}>
-              {hits.length} / {issues.length} issues found
-              <span className="small muted"> · {falsePos.length} false positive{falsePos.length === 1 ? '' : 's'} · {missed.length} missed</span>
+              {t('case.issuesFound', { hits: hits.length, total: issues.length })}
+              <span className="small muted"> · {t('case.fpMissed', { fp: falsePos.length, missed: missed.length })}</span>
             </p>
             <p className="small muted">
               {hits.length === issues.length && falsePos.length === 0
-                ? 'Controller-level review. You found everything and flagged nothing unnecessarily.'
-                : 'A good reviewer finds the real issues without crying wolf — false positives waste the team’s time, misses hide risk.'}
+                ? t('case.perfect')
+                : t('case.imperfect')}
             </p>
-            <button className="btn btn-ghost btn-sm" onClick={reset}><RotateCcw /> Try again</button>
+            <button className="btn btn-ghost btn-sm" onClick={reset}><RotateCcw /> {t('common.retry')}</button>
           </div>
 
           <div className="divider" />
-          <h2>Suggested professional review</h2>
+          <h2>{t('case.suggestedReview')}</h2>
           {(caseData.review || []).map((r, i) => (
             <Callout key={i} type={i === 0 ? 'key' : 'example'} title={r.title}>{r.body}</Callout>
           ))}

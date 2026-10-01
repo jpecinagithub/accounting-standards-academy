@@ -2,17 +2,25 @@ import React from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { Shuffle, GraduationCap, Target, Layers, ArrowRight } from 'lucide-react';
 import { useProgress } from '../store/progress.jsx';
-import { SKILLS, QUESTION_BANK, questionsBySkill, shuffle, MODULES } from '../data/index.js';
+import { useT } from '../i18n/useT.js';
+import { useContent } from '../i18n/content.js';
+import { shuffle } from '../data/index.js';
+import { SKILL_LABEL, DIFFICULTY_LABEL, label } from '../i18n/labels.js';
 import { PageHeader, StatCard } from '../components/ui.jsx';
+
+const DIFFICULTIES = ['Foundation', 'Intermediate', 'Advanced'];
 
 export default function Quizzes() {
   const { store } = useProgress();
+  const t = useT();
+  const lang = store.lang === 'es' ? 'es' : 'en';
+  const { SKILLS, QUESTION_BANK, questionsBySkill, MODULES } = useContent();
   const navigate = useNavigate();
 
   const startSkill = (sk) => navigate(`/practice?skill=${encodeURIComponent(sk)}`);
   const startRandom = () => {
     sessionStorage.setItem('afa-practice', JSON.stringify({
-      title: 'Mixed practice', questions: shuffle(QUESTION_BANK).slice(0, 12),
+      title: t('quizzes.mixedTitle'), questions: shuffle(QUESTION_BANK).slice(0, 12),
     }));
     navigate('/practice?mode=session');
   };
@@ -20,18 +28,18 @@ export default function Quizzes() {
   return (
     <div>
       <PageHeader
-        kicker="Test yourself"
-        title="Quizzes"
-        lead="Practice by skill area or difficulty, take a mixed set, or sit the 60-question final assessment."
+        kicker={t('quizzes.kicker')}
+        title={t('nav.quizzes')}
+        lead={t('quizzes.lead')}
         actions={
           <>
-            <button className="btn btn-ghost" onClick={startRandom}><Shuffle /> Mixed set (12)</button>
-            <Link className="btn btn-primary" to="/exam"><GraduationCap /> Final Exam</Link>
+            <button className="btn btn-ghost" onClick={startRandom}><Shuffle /> {t('quizzes.mixedSet')}</button>
+            <Link className="btn btn-primary" to="/exam"><GraduationCap /> {t('nav.exam')}</Link>
           </>
         }
       />
 
-      <h2 className="mb">Practice by skill</h2>
+      <h2 className="mb">{t('quizzes.bySkill')}</h2>
       <div className="grid grid-3 mb">
         {SKILLS.map(sk => {
           const total = questionsBySkill(sk).length;
@@ -40,33 +48,34 @@ export default function Quizzes() {
           return (
             <div className="card" key={sk}>
               <div className="flex between center">
-                <h3 style={{ margin: 0 }}>{sk}</h3>
+                <h3 style={{ margin: 0 }}>{label(SKILL_LABEL, sk, lang)}</h3>
                 {pct !== null && <span className="badge badge-gold serif-num">{pct}%</span>}
               </div>
-              <p className="small muted">{total} questions in bank{s ? ` · ${s.correct}/${s.total} correct by you` : ''}</p>
+              <p className="small muted">{t('quizzes.inBank', { total })}{s ? ` ${t('quizzes.yourScore', { correct: s.correct, total: s.total })}` : ''}</p>
               <button className="btn btn-ghost btn-sm" onClick={() => startSkill(sk)}>
-                Practice <ArrowRight size={14} />
+                {t('common.practice')} <ArrowRight size={14} />
               </button>
             </div>
           );
         })}
       </div>
 
-      <h2 className="mb">Practice by difficulty</h2>
+      <h2 className="mb">{t('quizzes.byDifficulty')}</h2>
       <div className="grid grid-3">
-        {['Foundation', 'Intermediate', 'Advanced'].map(d => {
+        {DIFFICULTIES.map(d => {
           const total = QUESTION_BANK.filter(q => q.difficulty === d).length;
           return (
             <div className="card" key={d}>
-              <h3><Target /> {d}</h3>
-              <p className="small muted">{total} questions</p>
+              <h3><Target /> {label(DIFFICULTY_LABEL, d, lang)}</h3>
+              <p className="small muted">{t('common.questions', { n: total })}</p>
               <button className="btn btn-ghost btn-sm" onClick={() => {
                 sessionStorage.setItem('afa-practice', JSON.stringify({
-                  title: `${d} practice`, questions: shuffle(QUESTION_BANK.filter(q => q.difficulty === d)).slice(0, 12),
+                  title: t('quizzes.difficultyTitle', { d: label(DIFFICULTY_LABEL, d, lang) }),
+                  questions: shuffle(QUESTION_BANK.filter(q => q.difficulty === d)).slice(0, 12),
                 }));
                 navigate('/practice?mode=session');
               }}>
-                Start <ArrowRight size={14} />
+                {t('common.start')} <ArrowRight size={14} />
               </button>
             </div>
           );
@@ -74,9 +83,9 @@ export default function Quizzes() {
       </div>
 
       <div className="card mt">
-        <h3><Layers /> Module quizzes</h3>
-        <p className="small muted">Each of the {MODULES.length} modules ends with its own 8–12 question quiz — the fastest way to lock in what you just learned.</p>
-        <Link className="btn btn-ghost btn-sm" to="/path">Go to Learning Path <ArrowRight size={14} /></Link>
+        <h3><Layers /> {t('quizzes.moduleQuizzes')}</h3>
+        <p className="small muted">{t('quizzes.moduleQuizzesText', { n: MODULES.length })}</p>
+        <Link className="btn btn-ghost btn-sm" to="/path">{t('quizzes.goToPath')} <ArrowRight size={14} /></Link>
       </div>
     </div>
   );

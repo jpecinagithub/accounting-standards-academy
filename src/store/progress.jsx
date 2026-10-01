@@ -4,6 +4,7 @@ const KEY = 'afa-progress-v1';
 
 const DEFAULT = {
   theme: 'dark',
+  lang: 'en',            // 'en' | 'es' — UI and content language (default EN)
   completed: {},        // moduleId -> ISO date
   quizzes: {},          // quizId -> { score, total, date, attempts }
   skillStats: {},       // skill -> { correct, total }
@@ -37,8 +38,16 @@ export function ProgressProvider({ children }) {
     document.documentElement.setAttribute('data-theme', store.theme || 'dark');
   }, [store.theme]);
 
+  useEffect(() => {
+    document.documentElement.setAttribute('lang', store.lang === 'es' ? 'es' : 'en');
+  }, [store.lang]);
+
   const toggleTheme = useCallback(() => {
     setStore(s => ({ ...s, theme: s.theme === 'dark' ? 'light' : 'dark' }));
+  }, []);
+
+  const setLang = useCallback((lang) => {
+    setStore(s => (s.lang === lang ? s : ({ ...s, lang: lang === 'es' ? 'es' : 'en' })));
   }, []);
 
   const completeModule = useCallback((id) => {
@@ -122,10 +131,10 @@ export function ProgressProvider({ children }) {
   }, []);
 
   const value = useMemo(() => ({
-    store, toggleTheme, completeModule, uncompleteModule, recordQuizResult,
+    store, toggleTheme, setLang, completeModule, uncompleteModule, recordQuizResult,
     recordLab, recordExam, recordInterview, recordSim, toggleBookmark,
     setLastVisited, removeMistake, clearMistakesTopic, resetAll,
-  }), [store, toggleTheme, completeModule, uncompleteModule, recordQuizResult, recordLab, recordExam, recordInterview, recordSim, toggleBookmark, setLastVisited, removeMistake, clearMistakesTopic, resetAll]);
+  }), [store, toggleTheme, setLang, completeModule, uncompleteModule, recordQuizResult, recordLab, recordExam, recordInterview, recordSim, toggleBookmark, setLastVisited, removeMistake, clearMistakesTopic, resetAll]);
 
   return <Ctx.Provider value={value}>{children}</Ctx.Provider>;
 }

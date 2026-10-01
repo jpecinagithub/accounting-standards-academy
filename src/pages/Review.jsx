@@ -2,13 +2,18 @@ import React from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { AlertTriangle, Trash2, ArrowRight, Target, CheckCircle2 } from 'lucide-react';
 import { useProgress, weakSkills } from '../store/progress.jsx';
-import { SKILLS, getModule } from '../data/index.js';
+import { useT } from '../i18n/useT.js';
+import { useContent } from '../i18n/content.js';
+import { SKILL_LABEL, TOPIC_LABEL, label } from '../i18n/labels.js';
 import { PageHeader, ProgressBar, Empty, Callout } from '../components/ui.jsx';
 
 const LETTERS = ['A', 'B', 'C', 'D'];
 
 export default function Review() {
   const { store, removeMistake, clearMistakesTopic } = useProgress();
+  const t = useT();
+  const lang = store.lang === 'es' ? 'es' : 'en';
+  const { SKILLS, getModule } = useContent();
   const navigate = useNavigate();
   const weak = weakSkills(store.skillStats, SKILLS);
   const mistakes = store.mistakes || [];
@@ -24,28 +29,28 @@ export default function Review() {
   return (
     <div>
       <PageHeader
-        kicker="Turn errors into mastery"
-        title="Review Mistakes"
-        lead="Every wrong quiz answer is stored here. Weak areas are computed from your actual accuracy — practice them directly."
+        kicker={t('review.kicker')}
+        title={t('nav.reviewMistakes')}
+        lead={t('review.lead')}
       />
 
-      <h2 className="mb">Weak areas</h2>
+      <h2 className="mb">{t('review.weak')}</h2>
       {weak.length === 0 ? (
         <div className="card mb">
-          <p className="flex center gap" style={{ gap: 8, margin: 0 }}><CheckCircle2 style={{ color: 'var(--success)' }} /> No weak areas flagged yet — keep answering questions and they will appear here when accuracy drops below 75%.</p>
+          <p className="flex center gap" style={{ gap: 8, margin: 0 }}><CheckCircle2 style={{ color: 'var(--success)' }} /> {t('review.noWeak')}</p>
         </div>
       ) : (
         <div className="grid grid-3 mb">
           {weak.map(w => (
             <div className="card" key={w.skill}>
               <div className="flex between center">
-                <h3 style={{ margin: 0 }}>{w.skill}</h3>
+                <h3 style={{ margin: 0 }}>{label(SKILL_LABEL, w.skill, lang)}</h3>
                 <span className="badge badge-red serif-num">{w.pct}%</span>
               </div>
               <div className="mt mb"><ProgressBar thin value={w.pct} /></div>
-              <p className="small muted">{w.attempts} attempts · {bySkill[w.skill]?.length || 0} logged mistakes</p>
+              <p className="small muted">{t('review.attempts', { attempts: w.attempts, mistakes: bySkill[w.skill]?.length || 0 })}</p>
               <button className="btn btn-primary btn-sm" onClick={() => navigate(`/practice?skill=${encodeURIComponent(w.skill)}`)}>
-                <Target /> Practice {w.skill}
+                <Target /> {t('review.practiceSkill', { skill: label(SKILL_LABEL, w.skill, lang) })}
               </button>
             </div>
           ))}
@@ -53,24 +58,24 @@ export default function Review() {
       )}
 
       <div className="flex between center wrap gap mb">
-        <h2 style={{ margin: 0 }}>Logged mistakes ({mistakes.length})</h2>
+        <h2 style={{ margin: 0 }}>{t('review.logged', { n: mistakes.length })}</h2>
       </div>
 
       {mistakes.length === 0 ? (
-        <Empty icon={CheckCircle2} title="Nothing to review">
-          Wrong answers will appear here with their explanations. For now — a clean sheet.
+        <Empty icon={CheckCircle2} title={t('review.emptyTitle')}>
+          {t('review.emptyText')}
         </Empty>
       ) : (
         Object.keys(bySkill).sort().map(sk => (
           <div key={sk} className="mb">
             <div className="flex between center wrap gap mb">
-              <h3 style={{ margin: 0 }}>{sk} <span className="badge">{bySkill[sk].length}</span></h3>
+              <h3 style={{ margin: 0 }}>{label(SKILL_LABEL, sk, lang)} <span className="badge">{bySkill[sk].length}</span></h3>
               <div className="flex gap">
                 <button className="btn btn-ghost btn-sm" onClick={() => navigate(`/practice?skill=${encodeURIComponent(sk)}`)}>
-                  Practice <ArrowRight size={13} />
+                  {t('common.practice')} <ArrowRight size={13} />
                 </button>
-                <button className="btn btn-danger-ghost btn-sm" onClick={() => { if (window.confirm(`Clear all logged mistakes for ${sk}?`)) clearMistakesTopic(sk); }}>
-                  <Trash2 /> Clear
+                <button className="btn btn-danger-ghost btn-sm" onClick={() => { if (window.confirm(t('review.confirmClear', { skill: label(SKILL_LABEL, sk, lang) }))) clearMistakesTopic(sk); }}>
+                  <Trash2 /> {t('common.clear')}
                 </button>
               </div>
             </div>
@@ -80,27 +85,27 @@ export default function Review() {
                 <div className="review-item mb" key={i}>
                   <div className="rq">{m.question}</div>
                   <div className="ra">
-                    You chose: <strong style={{ color: 'var(--danger)' }}>{LETTERS[m.picked]} — {m.options?.[m.picked]}</strong>
-                    {' '}· Correct: <strong style={{ color: 'var(--success)' }}>{LETTERS[m.answer]} — {m.options?.[m.answer]}</strong>
+                    {t('review.youChose')} <strong style={{ color: 'var(--danger)' }}>{LETTERS[m.picked]} — {m.options?.[m.picked]}</strong>
+                    {' '}· {t('review.correctWas')} <strong style={{ color: 'var(--success)' }}>{LETTERS[m.answer]} — {m.options?.[m.answer]}</strong>
                   </div>
                   {m.explanation && <div className="ra" style={{ color: 'var(--text-muted)' }}>{m.explanation}</div>}
                   <div className="flex between center wrap gap mt">
                     <span className="small muted">
-                      {m.topic && <span className="badge" style={{ marginRight: 6 }}>{m.topic}</span>}
-                      {mod && <Link className="small" to={`/module/${mod.id}`}>Revisit: {mod.title}</Link>}
+                      {m.topic && <span className="badge" style={{ marginRight: 6 }}>{label(TOPIC_LABEL, m.topic, lang)}</span>}
+                      {mod && <Link className="small" to={`/module/${mod.id}`}>{t('review.revisit', { title: mod.title })}</Link>}
                     </span>
-                    <button className="btn btn-ghost btn-sm" onClick={() => removeMistake(m.qid, m.date)}>Dismiss</button>
+                    <button className="btn btn-ghost btn-sm" onClick={() => removeMistake(m.qid, m.date)}>{t('common.dismiss')}</button>
                   </div>
                 </div>
               );
             })}
-            {bySkill[sk].length > 8 && <p className="small muted">+ {bySkill[sk].length - 8} more — practice the topic to clear them faster than dismissing one by one.</p>}
+            {bySkill[sk].length > 8 && <p className="small muted">{t('review.more', { n: bySkill[sk].length - 8 })}</p>}
           </div>
         ))
       )}
 
-      <Callout type="key" title="How to use this page">
-        Don't just re-read explanations. For each weak skill, run a 12-question practice set, then re-check this page — mastery moves only when answers change.
+      <Callout type="key" title={t('review.howTitle')}>
+        {t('review.howText')}
       </Callout>
     </div>
   );
