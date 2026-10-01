@@ -23,7 +23,7 @@ export default function Dashboard() {
   return (
     <div>
       <PageHeader
-        kicker="Eleving Group · Finance Academy"
+        kicker="Accounting Standards & Financial Reporting"
         title="Dashboard"
         lead="Train like a controller: theory, journal entries, statement impact, real cases — tracked as you go."
         actions={<Link className="btn btn-primary" to="/exam"><GraduationCap /> Final Exam</Link>}

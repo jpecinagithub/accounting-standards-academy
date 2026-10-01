@@ -1,6 +1,6 @@
 # Accounting Standards Academy
 
-Interactive web learning portal for **Accounting Standards & Financial Reporting Skills** — built for finance professionals (Finance Managers, Controllers, Accounting Managers, FP&A, Senior Accountants, Auditors, CFO-track). Customized for **Eleving Group**.
+Interactive web learning portal for **Accounting Standards & Financial Reporting Skills** — built for finance professionals (Finance Managers, Controllers, Accounting Managers, FP&A, Senior Accountants, Auditors, CFO-track).
 
 ## Stack
 

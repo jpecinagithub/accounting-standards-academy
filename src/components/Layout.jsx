@@ -57,7 +57,6 @@ export default function Layout({ children }) {
         <div className="brand">
           <div className="brand-mark"><Landmark size={20} /></div>
           <div>
-            <div className="brand-eyebrow">Eleving Group</div>
             <div className="brand-name">Accounting Standards Academy</div>
             <div className="brand-sub">IFRS · Reporting</div>
           </div>
