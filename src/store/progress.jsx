@@ -39,7 +39,11 @@ export function ProgressProvider({ children }) {
   }, [store.theme]);
 
   useEffect(() => {
-    document.documentElement.setAttribute('lang', store.lang === 'es' ? 'es' : 'en');
+    const l = store.lang === 'es' ? 'es' : 'en';
+    document.documentElement.setAttribute('lang', l);
+    // Drives the per-language palette in CSS: [data-lang="es"] swaps the
+    // blue info tones for reds (same pattern as AI Fundamentals Academy).
+    document.documentElement.setAttribute('data-lang', l);
   }, [store.lang]);
 
   const toggleTheme = useCallback(() => {

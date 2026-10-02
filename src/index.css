@@ -52,6 +52,23 @@
   --shadow: 0 8px 24px rgba(22, 33, 58, 0.08);
 }
 
+/* ------------------------------------------------------------------
+   Spanish brand palette: red shades instead of blues.
+   Active when <html data-lang="es">. Only the blue info tones change;
+   backgrounds, text, gold accent and semantic colors (success/warning/
+   danger) stay identical. Higher specificity than the [data-theme]
+   blocks above, so these win.
+------------------------------------------------------------------ */
+[data-theme='dark'][data-lang='es'] {
+  --info: #fda4af;
+  --info-soft: rgba(253, 164, 175, 0.12);
+}
+
+[data-theme='light'][data-lang='es'] {
+  --info: #e11d48;
+  --info-soft: rgba(225, 29, 72, 0.1);
+}
+
 * { box-sizing: border-box; }
 
 html, body { margin: 0; padding: 0; }
