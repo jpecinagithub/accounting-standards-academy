@@ -19,6 +19,7 @@ import Glossary from './pages/Glossary.jsx';
 import Progress from './pages/Progress.jsx';
 import FinalExam from './pages/FinalExam.jsx';
 import Simulator from './pages/Simulator.jsx';
+import Author from './pages/Author.jsx';
 
 export default function App() {
   return (
@@ -42,6 +43,7 @@ export default function App() {
         <Route path="/progress" element={<Progress />} />
         <Route path="/exam" element={<FinalExam />} />
         <Route path="/simulator" element={<Simulator />} />
+        <Route path="/author" element={<Author />} />
         <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>
     </Layout>

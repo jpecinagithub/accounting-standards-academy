@@ -3,7 +3,7 @@ import { NavLink, useLocation } from 'react-router-dom';
 import {
   LayoutDashboard, Route as RouteIcon, Landmark, FileBarChart2, BookOpenCheck,
   Scale, Briefcase, HelpCircle, Mic, AlertCircle, BookMarked, TrendingUp,
-  Menu, X, Sun, Moon, GraduationCap, FlaskConical,
+  Menu, X, Sun, Moon, GraduationCap, FlaskConical, UserRound,
 } from 'lucide-react';
 import { useProgress } from '../store/progress.jsx';
 import { useT } from '../i18n/useT.js';
@@ -26,6 +26,7 @@ const NAV = [
   { to: '/review', label: 'nav.reviewMistakes', icon: AlertCircle, badge: 'mistakes' },
   { to: '/glossary', label: 'nav.glossary', icon: BookMarked },
   { to: '/progress', label: 'nav.progress', icon: TrendingUp },
+  { to: '/author', label: 'nav.author', icon: UserRound },
 ];
 
 const TITLES = {
@@ -35,6 +36,7 @@ const TITLES = {
   '/quizzes': 'nav.quizzes', '/exam': 'nav.exam', '/simulator': 'nav.simulator',
   '/interview': 'nav.interview', '/review': 'nav.reviewMistakes',
   '/glossary': 'nav.glossary', '/progress': 'nav.progress',
+  '/author': 'nav.author',
 };
 
 export default function Layout({ children }) {
